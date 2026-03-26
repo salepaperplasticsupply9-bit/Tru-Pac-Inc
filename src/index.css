@@ -1,0 +1,317 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================
+   CUSTOM PROPERTIES
+========================= */
+:root {
+  --primary: #2A4C7D;
+  --primary-light: #3A6AB0;
+  --primary-dark: #1A385F;
+  --secondary: #F97316;
+  --secondary-light: #FDBA74;
+  --secondary-dark: #C2410C;
+  --accent: #10B981;
+  --accent-light: #34D399;
+  --accent-dark: #059669;
+  --paper: #F5F0E6;
+  --kraft: #D7B899;
+}
+
+/* =========================
+   BASE STYLES
+========================= */
+@layer base {
+  body {
+    @apply bg-paper text-gray-900 antialiased;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-bold tracking-tight;
+  }
+}
+
+/* =========================
+   KEYFRAMES & ANIMATIONS
+========================= */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 400px 400px;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   UTILITY CLASSES
+========================= */
+.animate-blob {
+  animation: blob 7s infinite ease-in-out;
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+
+.bg-gradient-animated {
+  background: linear-gradient(-45deg, #2A4C7D, #3A6AB0, #F97316, #10B981);
+  background-size: 400% 400%;
+  animation: gradient 15s ease infinite;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* =========================
+   MATERIAL COMPONENTS
+========================= */
+@layer components {
+  .material-card {
+    @apply bg-white/90 backdrop-blur-sm border border-gray-100 rounded-3xl p-8
+           shadow-[0_8px_30px_rgba(0,0,0,0.04)]
+           hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)]
+           transition-all duration-300;
+  }
+
+  .material-card:hover {
+    @apply -translate-y-2;
+  }
+
+  .paper-card {
+    @apply bg-paper border border-kraft/20 rounded-3xl p-8
+           shadow-[0_4px_20px_rgba(215,184,153,0.15)];
+  }
+
+  /* BUTTONS */
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary to-primary-dark text-white 
+           px-8 py-4 rounded-xl font-semibold
+           shadow-lg hover:shadow-xl hover:scale-[1.02]
+           transition-all duration-300;
+  }
+
+  .btn-secondary {
+    @apply bg-gradient-to-r from-secondary to-secondary-dark text-white 
+           px-8 py-4 rounded-xl font-semibold
+           shadow-lg hover:shadow-xl hover:scale-[1.02]
+           transition-all duration-300;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary text-primary bg-transparent
+           px-8 py-4 rounded-xl font-semibold
+           hover:bg-primary/5 transition-all duration-300;
+  }
+
+  /* INPUTS */
+  .input {
+    @apply w-full px-6 py-4 bg-white/80 backdrop-blur-sm
+           border-2 border-gray-200 rounded-xl
+           focus:outline-none focus:border-primary/50 focus:ring-2 focus:ring-primary/20
+           transition-all duration-200;
+  }
+
+  /* SECTION STYLES */
+  .section {
+    @apply py-24;
+  }
+
+  .section-sm {
+    @apply py-16;
+  }
+
+  .section-lg {
+    @apply py-32;
+  }
+
+  /* TYPOGRAPHY */
+  .heading-1 {
+    @apply text-5xl md:text-6xl font-bold tracking-tight;
+  }
+
+  .heading-2 {
+    @apply text-4xl md:text-5xl font-bold tracking-tight;
+  }
+
+  .heading-3 {
+    @apply text-3xl font-bold;
+  }
+
+  .subtitle {
+    @apply text-xl text-gray-600 leading-relaxed;
+  }
+}
+
+/* =========================
+   TEXTURE PATTERNS
+========================= */
+.bg-kraft-texture {
+  background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 400px;
+}
+
+.bg-dot-pattern {
+  background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.1) 1px, transparent 0);
+  background-size: 20px 20px;
+}
+
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* =========================
+   DECORATIVE ELEMENTS
+========================= */
+.floating-element {
+  @apply absolute rounded-full mix-blend-multiply filter blur-3xl opacity-70;
+}
+
+.glass-effect {
+  @apply bg-white/10 backdrop-blur-md border border-white/20;
+}
+
+/* =========================
+   MOBILE RESPONSIVE
+========================= */
+@media (max-width: 640px) {
+  .section {
+    @apply py-16;
+  }
+
+  .section-lg {
+    @apply py-20;
+  }
+
+  .heading-1 {
+    @apply text-3xl;
+  }
+
+  .heading-2 {
+    @apply text-2xl;
+  }
+
+  .material-card {
+    @apply p-6;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-outline {
+    @apply px-6 py-3;
+  }
+}
+
+@media (max-width: 768px) {
+  .heading-1 {
+    @apply text-4xl;
+  }
+
+  .heading-2 {
+    @apply text-3xl;
+  }
+}
+
+/* =========================
+   SCROLL BEHAVIOR
+========================= */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px; /* For fixed header */
+}
+
+/* =========================
+   CUSTOM SCROLLBAR
+========================= */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/50;
+}
+
+/* =========================
+   SELECTION STYLES
+========================= */
+::selection {
+  @apply bg-primary/20 text-primary;
+}
+
+/* =========================
+   FOCUS VISIBLE
+========================= */
+*:focus-visible {
+  @apply outline-2 outline-primary outline-offset-2;
+}
+
+/* =========================
+   PRINT STYLES
+========================= */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .material-card {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+  }
+}

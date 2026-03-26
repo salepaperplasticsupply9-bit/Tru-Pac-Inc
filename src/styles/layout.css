@@ -1,0 +1,22 @@
+@layer components {
+  .container {
+    @apply max-w-7xl mx-auto px-6;
+  }
+
+  .section {
+  padding: 3.5rem 0;
+}
+
+.section-tight {
+  padding: 5.75rem 0;
+}
+
+
+  .section-title {
+    @apply text-3xl font-bold text-primary mb-4;
+  }
+
+  .section-description {
+    @apply text-gray-600 max-w-2xl mx-auto;
+  }
+}
