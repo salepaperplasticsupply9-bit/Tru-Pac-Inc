@@ -20,7 +20,7 @@ const industries = [
     needs: ["Consistency", "Heat retention", "Speed"],
     icon: Building2,
     color: "from-primary to-primary-light",
-    stats: "42+ restaurants served"
+    stats: "200+ restaurants served"
   },
   {
     name: "Food Trucks",

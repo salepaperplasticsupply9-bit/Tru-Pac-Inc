@@ -77,7 +77,7 @@ const Header = () => {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2 text-sm">
             <Phone className="w-4 h-4" />
-            <span>Free consultation: (555) 123-4567</span>
+            <span>Free consultation: (347) 567-0578</span>
           </div>
           <div className="hidden md:flex items-center gap-4 text-sm">
             <span className="flex items-center gap-1">

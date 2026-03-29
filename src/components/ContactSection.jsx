@@ -179,7 +179,7 @@ const ContactSection = () => {
                     </div>
                     <div>
                       <p className="font-semibold">Email Us</p>
-                      <p className="text-white/70">salepaperplasticsupply9@gmail.com</p>
+                      <p className="text-white/70">trupacinc139@gmail.com</p>
                     </div>
                   </div>
                   
@@ -189,7 +189,8 @@ const ContactSection = () => {
                     </div>
                     <div>
                       <p className="font-semibold">Call Us</p>
-                      <p className="text-white/70">(555) 123-4567</p>
+                      <p className="text-white/70">+1 (347) 567-0578
+                      +1 (929) 284-5669</p>
                     </div>
                   </div>
                   

@@ -14,6 +14,7 @@ import {
   ArrowUpRight
 } from "lucide-react";
 import { motion } from "framer-motion";
+import truPacLogo from "../assets/logo/truPacLogo.jpg";
 
 const Footer = () => {
   const scrollToTop = () => {
@@ -51,12 +52,15 @@ const Footer = () => {
               className="mb-8"
             >
               <Link to="/" className="flex items-center gap-3 mb-6 group">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center">
-                  <Package className="w-7 h-7 text-white" />
-                </div>
-                <div>
+                <div className="w-12 h-12 rounded-2xl bg-white from-accent to-accent-light flex items-center justify-center">
+                <img 
+                    src={truPacLogo}
+                    alt="TRU PAC Logo"
+                    className="w-10 h-10 object-contain"
+                  /></div>
+                              <div>
                   <h2 className="text-2xl font-bold text-white group-hover:text-accent transition-colors">
-                    TRU PAC
+                    TRU PAC INC
                   </h2>
                   <p className="text-sm text-white/70 tracking-wider">PREMIUM PACKAGING</p>
                 </div>
@@ -176,10 +180,10 @@ const Footer = () => {
                 <div>
                   <p className="font-medium text-white mb-1">Email</p>
                   <a 
-                    href="mailto:salepaperplasticsupply9@gmail.com" 
+                    href="mailto:trupacinc139@gmail.com" 
                     className="text-white/70 hover:text-accent transition-colors"
                   >
-                    salepaperplasticsupply9@gmail.com
+TRUPACINC139@gmail.com
                   </a>
                 </div>
               </div>
@@ -189,14 +193,22 @@ const Footer = () => {
                   <Phone className="w-6 h-6 text-accent" />
                 </div>
                 <div>
-                  <p className="font-medium text-white mb-1">Phone</p>
-                  <a 
-                    href="tel:+1XXXXXXXXXX" 
-                    className="text-white/70 hover:text-accent transition-colors"
-                  >
-                    +1 (XXX) XXX-XXXX
-                  </a>
-                </div>
+  <p className="font-medium text-white mb-1">Phone</p>
+
+  <a 
+    href="tel:+13475670578" 
+    className="block text-white/70 hover:text-accent transition-colors"
+  >
+    +1 (347) 567-0578
+  </a>
+
+  <a 
+    href="tel:+19292845669" 
+    className="block text-white/70 hover:text-accent transition-colors"
+  >
+    +1 (929) 284-5669
+  </a>
+</div>
               </div>
               
               <div className="flex items-start gap-4">
@@ -215,10 +227,10 @@ const Footer = () => {
               <p className="text-white font-medium mb-4">Follow Us</p>
               <div className="flex gap-4">
                 {[
-                  { icon: Facebook, label: "Facebook", color: "hover:text-blue-500" },
+                  // { icon: Facebook, label: "Facebook", color: "hover:text-blue-500" },
                   { icon: Instagram, label: "Instagram", color: "hover:text-pink-500" },
-                  { icon: Twitter, label: "Twitter", color: "hover:text-blue-400" },
-                  { icon: Linkedin, label: "LinkedIn", color: "hover:text-blue-700" },
+                  // { icon: Twitter, label: "Twitter", color: "hover:text-blue-400" },
+                  // { icon: Linkedin, label: "LinkedIn", color: "hover:text-blue-700" },
                 ].map((social) => (
                   <a
                     key={social.label}
@@ -271,7 +283,7 @@ const Footer = () => {
         <div className="mt-12 pt-8 border-t border-white/10">
           <div className="flex flex-wrap items-center justify-center gap-8">
             <div className="text-center">
-              <div className="text-2xl font-bold text-accent mb-2">42+</div>
+              <div className="text-2xl font-bold text-accent mb-2">200+</div>
               <div className="text-sm text-white/70">Happy Clients</div>
             </div>
             <div className="text-center">

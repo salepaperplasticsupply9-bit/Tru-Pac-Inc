@@ -4,7 +4,7 @@ import { useInView } from "react-intersection-observer";
 import { useState, useEffect } from "react";
 
 const stats = [
-  { id: 1, value: 42, suffix: "+", label: "Loyal Customers", duration: 2000 },
+  { id: 1, value: 200, suffix: "+", label: "Loyal Customers", duration: 2000 },
   { id: 2, value: 3400, suffix: "+", label: "Orders Fulfilled", duration: 2500 },
   { id: 3, value: 120, suffix: "K+", label: "Packaging Units Supplied", duration: 3000 },
 ];
