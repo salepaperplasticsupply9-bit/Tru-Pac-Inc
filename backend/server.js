@@ -6,7 +6,6 @@ import * as dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
-import xss from "xss-clean";
 import Joi from "joi";
 import os from "os";
 
@@ -21,7 +20,6 @@ console.log("Resend client ready");
 
 app.use(helmet());
 app.use(morgan("combined"));
-app.use(xss());
 
 // Rate limiting — general API
 const limiter = rateLimit({
