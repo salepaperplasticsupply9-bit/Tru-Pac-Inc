@@ -228,13 +228,15 @@ TRUPACINC139@gmail.com
               <div className="flex gap-4">
                 {[
                   // { icon: Facebook, label: "Facebook", color: "hover:text-blue-500" },
-                  { icon: Instagram, label: "Instagram", color: "hover:text-pink-500" },
+                  { icon: Instagram, label: "Instagram", color: "hover:text-pink-500", url: "https://www.instagram.com/trupacinc" },
                   // { icon: Twitter, label: "Twitter", color: "hover:text-blue-400" },
                   // { icon: Linkedin, label: "LinkedIn", color: "hover:text-blue-700" },
                 ].map((social) => (
                   <a
                     key={social.label}
-                    href="#"
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className={`w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white ${social.color} transition-colors hover:bg-white/20`}
                     aria-label={social.label}
                   >
