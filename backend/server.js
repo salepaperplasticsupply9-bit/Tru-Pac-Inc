@@ -1,6 +1,6 @@
 import express from "express";
 import multer from "multer";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import cors from "cors";
 import * as dotenv from "dotenv";
 import helmet from "helmet";
@@ -13,17 +13,14 @@ import os from "os";
 dotenv.config();
 
 const app = express();
+const resend = new Resend(process.env.RESEND_API_KEY);
+console.log("Resend client ready");
 
 
 // ================= SECURITY MIDDLEWARE =================
 
-// Security headers
 app.use(helmet());
-
-// HTTP request logging
 app.use(morgan("combined"));
-
-// Sanitize user input
 app.use(xss());
 
 // Rate limiting — general API
@@ -49,58 +46,27 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (e.g. server-to-server, curl)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+    if (allowedOrigins.includes(origin)) return callback(null, true);
     callback(new Error(`CORS blocked: ${origin}`));
   },
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"]
 }));
 
-// JSON body parser
 app.use(express.json());
 
 
 // ================= FILE UPLOAD =================
-// Using os.tmpdir() so uploads work on Railway (ephemeral filesystem)
-// Files are only needed temporarily to attach to emails, then discarded
 
 const upload = multer({
   dest: os.tmpdir(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {
       return cb(new Error("Only image uploads are allowed"));
     }
     cb(null, true);
-  }
-});
-
-
-// ================= EMAIL TRANSPORT =================
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
-
-// Verify email connection on startup
-transporter.verify((error) => {
-  if (error) {
-    console.error("Email transporter error:", error);
-  } else {
-    console.log("Email transporter ready");
   }
 });
 
@@ -122,7 +88,6 @@ const cartSchema = Joi.object({
     state: Joi.string().allow("").optional(),
     zipCode: Joi.string().allow("").optional(),
     notes: Joi.string().allow("").optional()
-
   }).required(),
   items: Joi.array().items(
     Joi.object({
@@ -136,11 +101,10 @@ const contactSchema = Joi.object({
   email: Joi.string().email().required(),
   name: Joi.string().allow("").optional(),
   message: Joi.string().allow("").optional()
-}).unknown(true); // allow extra fields
+}).unknown(true);
 
 
 // ================= HEALTH CHECK =================
-// Railway uses this to confirm your server is running
 
 app.get("/", (req, res) => {
   res.status(200).json({ status: "ok", message: "TRU PAC backend running" });
@@ -157,8 +121,8 @@ app.post("/api/contact", async (req, res) => {
   }
 
   try {
-    await transporter.sendMail({
-      from: `"Website" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: "Website <onboarding@resend.dev>",
       to: process.env.EMAIL_USER,
       replyTo: req.body.email,
       subject: "New Contact Message",
@@ -180,8 +144,8 @@ app.post("/api/cart-order", async (req, res) => {
 
   const { error } = cartSchema.validate(req.body);
   if (error) {
-    console.error("Validation error DETAILS:", JSON.stringify(error.details, null, 2));
-    return res.status(400).send(JSON.stringify(error.details));
+    console.error("Validation error:", JSON.stringify(error.details, null, 2));
+    return res.status(400).send("Invalid request data");
   }
 
   try {
@@ -253,9 +217,9 @@ app.post("/api/cart-order", async (req, res) => {
       </div>
     `;
 
-    // Email to you (business owner)
-    await transporter.sendMail({
-      from: `"TRU PAC Orders" <${process.env.EMAIL_USER}>`,
+    // Email to business owner
+    await resend.emails.send({
+      from: "TRU PAC Orders <onboarding@resend.dev>",
       to: process.env.EMAIL_USER,
       replyTo: order.contact.email,
       subject: `New Quote Request • ${order.orderId}`,
@@ -263,8 +227,8 @@ app.post("/api/cart-order", async (req, res) => {
     });
 
     // Confirmation email to customer
-    await transporter.sendMail({
-      from: `"TRU PAC" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: "TRU PAC <onboarding@resend.dev>",
       to: order.contact.email,
       subject: "We Received Your Quote Request",
       html: `
@@ -330,13 +294,16 @@ app.post("/api/custom-quote", upload.single("logo"), async (req, res) => {
       </div>
     `;
 
-    await transporter.sendMail({
-      from: `"TRU PAC Quotes" <${process.env.EMAIL_USER}>`,
+    await resend.emails.send({
+      from: "TRU PAC Quotes <onboarding@resend.dev>",
       to: process.env.EMAIL_USER,
       replyTo: form.email,
       subject: `New Custom Packaging Quote - ${form.businessName}`,
       html: emailHTML,
-      attachments: req.file ? [{ path: req.file.path }] : []
+      attachments: req.file ? [{
+        filename: req.file.originalname || "logo",
+        path: req.file.path
+      }] : []
     });
 
     res.sendStatus(200);
