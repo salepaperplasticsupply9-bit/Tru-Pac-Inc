@@ -115,7 +115,9 @@ const cartSchema = Joi.object({
     deliveryAddress: Joi.string().allow("").optional(),
     city: Joi.string().allow("").optional(),
     state: Joi.string().allow("").optional(),
-    zipCode: Joi.string().allow("").optional()
+    zipCode: Joi.string().allow("").optional(),
+    notes: Joi.string().allow("").optional()
+
   }).required(),
   items: Joi.array().items(
     Joi.object({
