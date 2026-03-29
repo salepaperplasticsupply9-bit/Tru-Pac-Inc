@@ -118,7 +118,7 @@ const CustomPackagingQuote = () => {
       data.append(key, value)
     );
 
-    await fetch("${import.meta.env.VITE_API_URL}/api/custom-quote", {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/custom-quote`, {
       method: "POST",
       body: data,
     });
