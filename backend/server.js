@@ -175,8 +175,8 @@ app.post("/api/cart-order", async (req, res) => {
 
   const { error } = cartSchema.validate(req.body);
   if (error) {
-    console.error("Validation error:", error.details);
-    return res.status(400).send("Invalid request data");
+    console.error("Validation error DETAILS:", JSON.stringify(error.details, null, 2));
+    return res.status(400).send(JSON.stringify(error.details));
   }
 
   try {
