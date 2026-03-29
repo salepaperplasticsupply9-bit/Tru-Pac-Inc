@@ -2,12 +2,13 @@ import express from "express";
 import multer from "multer";
 import nodemailer from "nodemailer";
 import cors from "cors";
-import dotenv from "dotenv";
+import * as dotenv from "dotenv";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import morgan from "morgan";
 import xss from "xss-clean";
 import Joi from "joi";
+import os from "os";
 
 dotenv.config();
 
@@ -25,27 +26,36 @@ app.use(morgan("combined"));
 // Sanitize user input
 app.use(xss());
 
-// Rate limiting
+// Rate limiting — general API
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100
 });
-
 app.use("/api", limiter);
 
+// Rate limiting — order endpoint
 const orderLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 5
 });
-
 app.use("/api/cart-order", orderLimiter);
 
-// CORS configuration
+// CORS — allow your frontend origins only
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://paperplasticsupply.com",
+  "https://www.paperplasticsupply.com"
+];
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://paperplasticsupply.com"
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. server-to-server, curl)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS blocked: ${origin}`));
+  },
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"]
 }));
@@ -54,14 +64,16 @@ app.use(cors({
 app.use(express.json());
 
 
-// ================= FILE UPLOAD SECURITY =================
+// ================= FILE UPLOAD =================
+// Using os.tmpdir() so uploads work on Railway (ephemeral filesystem)
+// Files are only needed temporarily to attach to emails, then discarded
 
 const upload = multer({
-  dest: "uploads/",
-  limits: { fileSize: 5 * 1024 * 1024 },
+  dest: os.tmpdir(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {
-      return cb(new Error("Only image uploads allowed"));
+      return cb(new Error("Only image uploads are allowed"));
     }
     cb(null, true);
   }
@@ -78,24 +90,66 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// Verify email connection on startup
+transporter.verify((error) => {
+  if (error) {
+    console.error("Email transporter error:", error);
+  } else {
+    console.log("Email transporter ready");
+  }
+});
 
-// ================= VALIDATION =================
+
+// ================= VALIDATION SCHEMAS =================
 
 const cartSchema = Joi.object({
+  orderId: Joi.string().required(),
+  orderDate: Joi.string().required(),
+  totalItems: Joi.number().required(),
+  totalUnits: Joi.number().required(),
   contact: Joi.object({
     fullName: Joi.string().required(),
     email: Joi.string().email().required(),
-    phone: Joi.string().required()
+    phone: Joi.string().required(),
+    businessName: Joi.string().allow("").optional(),
+    deliveryAddress: Joi.string().allow("").optional(),
+    city: Joi.string().allow("").optional(),
+    state: Joi.string().allow("").optional(),
+    zipCode: Joi.string().allow("").optional()
   }).required(),
-  items: Joi.array().required()
+  items: Joi.array().items(
+    Joi.object({
+      name: Joi.string().required(),
+      quantity: Joi.number().required()
+    })
+  ).required()
+});
+
+const contactSchema = Joi.object({
+  email: Joi.string().email().required(),
+  name: Joi.string().allow("").optional(),
+  message: Joi.string().allow("").optional()
+}).unknown(true); // allow extra fields
+
+
+// ================= HEALTH CHECK =================
+// Railway uses this to confirm your server is running
+
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", message: "TRU PAC backend running" });
 });
 
 
 // ================= CONTACT FORM =================
 
 app.post("/api/contact", async (req, res) => {
-  try {
 
+  const { error } = contactSchema.validate(req.body);
+  if (error) {
+    return res.status(400).send("Invalid request data");
+  }
+
+  try {
     await transporter.sendMail({
       from: `"Website" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
@@ -118,13 +172,12 @@ app.post("/api/contact", async (req, res) => {
 app.post("/api/cart-order", async (req, res) => {
 
   const { error } = cartSchema.validate(req.body);
-
   if (error) {
+    console.error("Validation error:", error.details);
     return res.status(400).send("Invalid request data");
   }
 
   try {
-
     const order = req.body;
 
     const itemsHTML = (order.items || [])
@@ -193,6 +246,7 @@ app.post("/api/cart-order", async (req, res) => {
       </div>
     `;
 
+    // Email to you (business owner)
     await transporter.sendMail({
       from: `"TRU PAC Orders" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_USER,
@@ -201,6 +255,7 @@ app.post("/api/cart-order", async (req, res) => {
       html: emailHTML
     });
 
+    // Confirmation email to customer
     await transporter.sendMail({
       from: `"TRU PAC" <${process.env.EMAIL_USER}>`,
       to: order.contact.email,
@@ -228,12 +283,11 @@ app.post("/api/cart-order", async (req, res) => {
 app.post("/api/custom-quote", upload.single("logo"), async (req, res) => {
 
   try {
-
     const form = req.body;
 
     const productsList = (form.products || "")
       .split(",")
-      .map((p) => `<li>${p}</li>`)
+      .map((p) => `<li>${p.trim()}</li>`)
       .join("");
 
     const emailHTML = `
@@ -287,10 +341,18 @@ app.post("/api/custom-quote", upload.single("logo"), async (req, res) => {
 });
 
 
-// ================= SERVER =================
+// ================= ERROR HANDLER =================
+
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err.message);
+  res.status(500).json({ error: "Internal server error" });
+});
+
+
+// ================= START SERVER =================
 
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
+  console.log(`Backend running on port ${PORT}`);
 });
