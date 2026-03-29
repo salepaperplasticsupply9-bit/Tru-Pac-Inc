@@ -53,8 +53,7 @@ const ContactSection = () => {
     if (form.botcheck) return;
 
     // Simulate API call
-    await fetch("http://localhost:5001/api/contact", {
-      method: "POST",
+await fetch(`${import.meta.env.VITE_API_URL}/api/contact`, {      method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
     });
