@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import MainLayout from "../layouts/MainLayout";
 import { productCategories } from "../data/productCategories";
 import ProductCard from "../components/ProductCard";
@@ -47,33 +47,9 @@ const Products = () => {
       {/* Hero Section */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5">
-          <motion.div 
-            className="absolute top-20 -left-20 w-96 h-96 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl"
-            animate={{
-              y: [0, -40, 0],
-              x: [0, 30, 0],
-              scale: [1, 1.1, 1]
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-          <motion.div 
-            className="absolute -bottom-20 -right-20 w-[700px] h-[700px] bg-secondary/10 rounded-full mix-blend-multiply filter blur-3xl"
-            animate={{
-              y: [0, 30, 0],
-              x: [0, -30, 0],
-              scale: [1, 1.15, 1]
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              ease: "easeInOut",
-              delay: 1
-            }}
-          />
+          {/* Before — two motion.divs with infinite animation, replace with plain divs */}
+          <div className="absolute top-20 -left-20 w-96 h-96 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl" />
+          <div className="absolute -bottom-20 -right-20 w-[700px] h-[700px] bg-secondary/10 rounded-full mix-blend-multiply filter blur-3xl" />
         </div>
 
         {/* Grid pattern overlay */}
@@ -191,12 +167,17 @@ const Products = () => {
       {/* Products Grid Section */}
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {filteredCategories.length === 0 ? (
+          <AnimatePresence mode="wait">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-20"
+              key={`${selectedFilter}-${searchQuery}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
             >
+          {filteredCategories.length === 0 ? (
+              <div className="text-center py-20">
+
               <div className="w-24 h-24 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full flex items-center justify-center mx-auto mb-8">
                 <Package className="w-12 h-12 text-gray-400" />
               </div>
@@ -213,21 +194,13 @@ const Products = () => {
               >
                 Clear Filters
               </button>
-            </motion.div>
+            </div>
           ) : (
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredCategories.map((category, index) => (
-                <motion.div
+              {filteredCategories.map((category) => (
+                <div
                   key={category.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ 
-                    y: -10,
-                    transition: { duration: 0.2 }
-                  }}
-                  className="group"
+                  className="group relative"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-70 transition-opacity duration-500" />
                   
@@ -243,10 +216,12 @@ const Products = () => {
                     {/* Card hover overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                   </div>
-                </motion.div>
+                  </div>
               ))}
             </div>
           )}
+          </motion.div>
+        </AnimatePresence>
         </div>
       </section>
 
