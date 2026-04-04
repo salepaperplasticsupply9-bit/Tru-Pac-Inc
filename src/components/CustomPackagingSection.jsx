@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Package, 
   Printer, 
@@ -10,7 +10,8 @@ import {
   Factory,
   Upload,
   Mail,
-  ArrowRight
+  ArrowRight,
+  X
 } from "lucide-react";
 
 const OPTIONS = [
@@ -107,54 +108,164 @@ const HOW_IT_WORKS = [
   },
 ];
 
+/* ── Reusable bottom-sheet popup ── */
+const BottomSheet = ({ open, onClose, children }) => (
+  <AnimatePresence>
+    {open && (
+      <>
+        <motion.div
+          key="backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={onClose}
+        />
+        <motion.div
+          key="sheet"
+          initial={{ y: "100%" }}
+          animate={{ y: 0 }}
+          exit={{ y: "100%" }}
+          transition={{ type: "spring", damping: 30, stiffness: 300 }}
+          className="fixed bottom-0 left-0 right-0 z-50 lg:hidden max-h-[90vh] overflow-y-auto rounded-t-3xl bg-white"
+        >
+          <div className="sticky top-0 z-10 flex justify-end px-6 pt-5 pb-2 bg-white rounded-t-3xl">
+            <button
+              onClick={onClose}
+              className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5 text-gray-600" />
+            </button>
+          </div>
+          <div className="px-4 pb-10">{children}</div>
+        </motion.div>
+      </>
+    )}
+  </AnimatePresence>
+);
+
+/* ── Option detail panel (shared between desktop inline + mobile popup) ── */
+const OptionDetail = ({ active }) => (
+  <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl border border-gray-100 shadow-lg p-8">
+    <div className="flex items-center gap-4 mb-6">
+      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${active.color} flex items-center justify-center`}>
+        <active.icon className="w-8 h-8 text-white" />
+      </div>
+      <div>
+        <h3 className="text-2xl font-bold text-gray-900">{active.title}</h3>
+        <p className="text-gray-600">{active.description}</p>
+      </div>
+    </div>
+    <div className="space-y-6">
+      <div>
+        <h4 className="font-semibold text-gray-900 mb-3">Capabilities</h4>
+        <ul className="space-y-2">
+          {active.capabilities.map((cap) => (
+            <li key={cap} className="flex items-center gap-3 text-gray-700">
+              <div className="w-2 h-2 bg-primary rounded-full" />
+              {cap}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div>
+        <h4 className="font-semibold text-gray-900 mb-3">Commonly used by</h4>
+        <div className="flex flex-wrap gap-2">
+          {active.industries.map((ind) => (
+            <span
+              key={ind}
+              className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200"
+            >
+              {ind}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
+/* ── Step detail panel (shared between desktop inline + mobile popup) ── */
+const StepDetail = ({ activeStep, navigate }) => (
+  <div className="bg-white rounded-3xl border border-gray-100 shadow-lg p-8">
+    <div className="flex items-center gap-4 mb-6">
+      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center">
+        <activeStep.icon className="w-8 h-8 text-white" />
+      </div>
+      <div>
+        <h3 className="text-2xl font-bold text-gray-900">{activeStep.title}</h3>
+        <p className="text-gray-600">{activeStep.short}</p>
+      </div>
+    </div>
+    <div className="space-y-6">
+      <p className="text-gray-700 leading-relaxed">{activeStep.long}</p>
+      <div>
+        <h4 className="font-semibold text-gray-900 mb-3">What we handle</h4>
+        <ul className="space-y-2">
+          {activeStep.handles.map((item) => (
+            <li key={item} className="flex items-center gap-3 text-gray-700">
+              <div className="w-2 h-2 bg-accent rounded-full" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="pt-8 border-t border-gray-200">
+        <div className="text-center">
+          <p className="text-gray-600 mb-6">Ready to start your custom packaging journey?</p>
+          <motion.button
+            onClick={() => navigate("/custom-packaging-quote")}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="group inline-flex items-center gap-3 bg-gradient-to-r from-primary to-primary-dark text-white px-10 py-4 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
+          >
+            <Mail className="w-5 h-5" />
+            <span>Request a Custom Quote</span>
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </motion.button>
+          <p className="text-sm text-gray-500 mt-4">No commitment required. Get a free quote in 24 hours.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const CustomPackagingSection = () => {
   const navigate = useNavigate();
   const [active, setActive] = useState(OPTIONS[0]);
   const [activeStep, setActiveStep] = useState(HOW_IT_WORKS[0]);
 
+  const [optionPopupOpen, setOptionPopupOpen] = useState(false);
+  const [stepPopupOpen, setStepPopupOpen] = useState(false);
+
   return (
     <section id="custom" className="relative py-32 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5">
-        <motion.div 
+        <motion.div
           className="absolute top-20 left-20 w-80 h-80 bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl"
-          animate={{
-            y: [0, -30, 0],
-            scale: [1, 1.1, 1]
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
+          animate={{ y: [0, -30, 0], scale: [1, 1.1, 1] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
-        <motion.div 
+        <motion.div
           className="absolute bottom-20 right-20 w-96 h-96 bg-secondary/10 rounded-full mix-blend-multiply filter blur-3xl"
-          animate={{
-            y: [0, 20, 0],
-            scale: [1, 0.9, 1]
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: 2
-          }}
+          animate={{ y: [0, 20, 0], scale: [1, 0.9, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 2 }}
         />
       </div>
 
-      {/* Grid pattern overlay */}
-      <div 
+      <div
         className="absolute inset-0 opacity-10"
         style={{
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2) 1px, transparent 1px),
                             linear-gradient(90deg, rgba(0, 0, 0, 0.2) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px'
+          backgroundSize: "60px 60px",
         }}
       />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
         {/* Main Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -167,21 +278,19 @@ const CustomPackagingSection = () => {
             <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
             <span className="text-sm font-semibold text-accent-dark">Custom Solutions</span>
           </div>
-          
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6">
             Custom Packaging
             <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               Made Simple
             </span>
           </h2>
-          
           <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
             Transform your brand with bespoke packaging solutions designed specifically for your business needs.
           </p>
         </motion.div>
 
-        {/* Package Type Selection */}
-        <motion.div 
+        {/* ── Package Type Selection ── */}
+        <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -193,13 +302,11 @@ const CustomPackagingSection = () => {
               <h3 className="text-3xl font-bold text-gray-900 mb-4">
                 What type of packaging do you need?
               </h3>
-              <p className="text-gray-600">
-                Select an option below to explore custom capabilities.
-              </p>
+              <p className="text-gray-600">Select an option below to explore custom capabilities.</p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* Selection buttons */}
+            {/* DESKTOP: side-by-side */}
+            <div className="hidden lg:grid lg:grid-cols-2 gap-8">
               <div className="space-y-4">
                 {OPTIONS.map((opt) => (
                   <motion.button
@@ -220,66 +327,48 @@ const CustomPackagingSection = () => {
                         <h4 className="font-bold text-gray-900">{opt.title}</h4>
                         <p className="text-sm text-gray-600 mt-1">{opt.description}</p>
                       </div>
-                      {active.id === opt.id && (
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                      )}
+                      {active.id === opt.id && <div className="w-2 h-2 bg-primary rounded-full" />}
                     </div>
                   </motion.button>
                 ))}
               </div>
 
-              {/* Details panel */}
               <motion.div
                 key={active.id}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
-                className="bg-gradient-to-br from-white to-gray-50 rounded-3xl border border-gray-100 shadow-lg p-8"
               >
-                <div className="flex items-center gap-4 mb-6">
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${active.color} flex items-center justify-center`}>
-                    <active.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">{active.title}</h3>
-                    <p className="text-gray-600">{active.description}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">Capabilities</h4>
-                    <ul className="space-y-2">
-                      {active.capabilities.map((cap) => (
-                        <li key={cap} className="flex items-center gap-3 text-gray-700">
-                          <div className="w-2 h-2 bg-primary rounded-full" />
-                          {cap}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">Commonly used by</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {active.industries.map((ind) => (
-                        <span
-                          key={ind}
-                          className="px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-700 border border-gray-200"
-                        >
-                          {ind}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                <OptionDetail active={active} />
               </motion.div>
+            </div>
+
+            {/* MOBILE: tile list → popup */}
+            <div className="lg:hidden space-y-4">
+              {OPTIONS.map((opt) => (
+                <motion.button
+                  key={opt.id}
+                  onClick={() => { setActive(opt); setOptionPopupOpen(true); }}
+                  className="w-full text-left rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm active:scale-[0.98] transition-all duration-200"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${opt.color} flex items-center justify-center flex-shrink-0`}>
+                      <opt.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-gray-900">{opt.title}</h4>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">{opt.description}</p>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-primary flex-shrink-0 ml-2" />
+                  </div>
+                </motion.button>
+              ))}
             </div>
           </div>
         </motion.div>
 
-        {/* How It Works */}
-        <motion.div 
+        {/* ── How It Works ── */}
+        <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -288,16 +377,12 @@ const CustomPackagingSection = () => {
         >
           <div className="bg-gradient-to-br from-primary/5 via-accent/5 to-secondary/5 rounded-3xl border border-gray-100 shadow-2xl p-8 lg:p-12">
             <div className="max-w-3xl mx-auto text-center mb-12">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4">
-                How It Works
-              </h3>
-              <p className="text-gray-600">
-                A seamless process from concept to delivery.
-              </p>
+              <h3 className="text-3xl font-bold text-gray-900 mb-4">How It Works</h3>
+              <p className="text-gray-600">A seamless process from concept to delivery.</p>
             </div>
 
-            <div className="grid lg:grid-cols-2 gap-8">
-              {/* Steps selection */}
+            {/* DESKTOP: side-by-side */}
+            <div className="hidden lg:grid lg:grid-cols-2 gap-8">
               <div className="space-y-4">
                 {HOW_IT_WORKS.map((step, index) => (
                   <motion.button
@@ -318,70 +403,42 @@ const CustomPackagingSection = () => {
                         <h4 className="font-bold text-gray-900">{step.title}</h4>
                         <p className="text-sm text-gray-600 mt-1">{step.short}</p>
                       </div>
-                      {activeStep.title === step.title && (
-                        <div className="w-2 h-2 bg-accent rounded-full" />
-                      )}
+                      {activeStep.title === step.title && <div className="w-2 h-2 bg-accent rounded-full" />}
                     </div>
                   </motion.button>
                 ))}
               </div>
 
-              {/* Step details */}
               <motion.div
                 key={activeStep.title}
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.3 }}
-                className="bg-white rounded-3xl border border-gray-100 shadow-lg p-8"
               >
-                <div className="flex items-center gap-4 mb-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-accent to-accent-light flex items-center justify-center">
-                    <activeStep.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">{activeStep.title}</h3>
-                    <p className="text-gray-600">{activeStep.short}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  <p className="text-gray-700 leading-relaxed">{activeStep.long}</p>
-
-                  <div>
-                    <h4 className="font-semibold text-gray-900 mb-3">What we handle</h4>
-                    <ul className="space-y-2">
-                      {activeStep.handles.map((item) => (
-                        <li key={item} className="flex items-center gap-3 text-gray-700">
-                          <div className="w-2 h-2 bg-accent rounded-full" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Main CTA */}
-                  <div className="pt-8 border-t border-gray-200">
-                    <div className="text-center">
-                      <p className="text-gray-600 mb-6">
-                        Ready to start your custom packaging journey?
-                      </p>
-                      <motion.button
-                        onClick={() => navigate("/custom-packaging-quote")}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="group inline-flex items-center gap-3 bg-gradient-to-r from-primary to-primary-dark text-white px-10 py-4 rounded-2xl font-semibold shadow-xl hover:shadow-2xl transition-all duration-300"
-                      >
-                        <Mail className="w-5 h-5" />
-                        <span>Request a Custom Quote</span>
-                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </motion.button>
-                      <p className="text-sm text-gray-500 mt-4">
-                        No commitment required. Get a free quote in 24 hours.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <StepDetail activeStep={activeStep} navigate={navigate} />
               </motion.div>
+            </div>
+
+            {/* MOBILE: tile list → popup */}
+            <div className="lg:hidden space-y-4">
+              {HOW_IT_WORKS.map((step, index) => (
+                <motion.button
+                  key={step.title}
+                  onClick={() => { setActiveStep(step); setStepPopupOpen(true); }}
+                  className="w-full text-left rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm active:scale-[0.98] transition-all duration-200"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xl font-bold text-gray-700">{index + 1}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-bold text-gray-900">{step.title}</h4>
+                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">{step.short}</p>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-accent flex-shrink-0 ml-2" />
+                  </div>
+                </motion.button>
+              ))}
             </div>
           </div>
         </motion.div>
@@ -410,6 +467,16 @@ const CustomPackagingSection = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* ── Mobile popup: packaging options ── */}
+      <BottomSheet open={optionPopupOpen} onClose={() => setOptionPopupOpen(false)}>
+        <OptionDetail active={active} />
+      </BottomSheet>
+
+      {/* ── Mobile popup: how it works steps ── */}
+      <BottomSheet open={stepPopupOpen} onClose={() => setStepPopupOpen(false)}>
+        <StepDetail activeStep={activeStep} navigate={navigate} />
+      </BottomSheet>
     </section>
   );
 };

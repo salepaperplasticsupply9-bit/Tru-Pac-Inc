@@ -183,7 +183,7 @@ const Footer = () => {
                     href="mailto:trupacinc139@gmail.com" 
                     className="text-white/70 hover:text-accent transition-colors"
                   >
-TRUPACINC139@gmail.com
+                  trupacinc139@gmail.com
                   </a>
                 </div>
               </div>

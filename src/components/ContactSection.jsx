@@ -186,11 +186,13 @@ await fetch(`${import.meta.env.VITE_API_URL}/api/contact`, {      method: "POST"
                     <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
                       <Phone className="w-6 h-6" />
                     </div>
-                    <div>
-                      <p className="font-semibold">Call Us</p>
-                      <p className="text-white/70">+1 (347) 567-0578
-                      +1 (929) 284-5669</p>
-                    </div>
+
+                  <div>
+                    <p className="font-semibold">Call Us</p>
+                    <p className="text-white/70">+1 (347) 567-0578</p>
+                    <p className="text-white/70">+1 (929) 284-5669</p>
+                  </div>
+
                   </div>
                   
                   <div className="flex items-start gap-4">

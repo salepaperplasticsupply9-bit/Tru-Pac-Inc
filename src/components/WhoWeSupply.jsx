@@ -10,7 +10,8 @@ import {
   Shield,
   Clock,
   TrendingUp,
-  ArrowRight
+  ArrowRight,
+  X
 } from "lucide-react";
 
 const industries = [
@@ -56,14 +57,99 @@ const industries = [
   },
 ];
 
+const DetailPanel = ({ active }) => (
+  <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-gray-100 shadow-2xl p-8 lg:p-10 overflow-hidden relative">
+    <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${active.color}`} />
+
+    <div className="flex items-center gap-4 mb-8">
+      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${active.color} flex items-center justify-center`}>
+        <active.icon className="w-8 h-8 text-white" />
+      </div>
+      <div>
+        <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">{active.name}</h3>
+        <p className="text-gray-600">{active.stats}</p>
+      </div>
+    </div>
+
+    <p className="text-gray-700 text-lg leading-relaxed mb-10">{active.description}</p>
+
+    <div>
+      <div className="flex items-center gap-3 mb-6">
+        <Target className="w-6 h-6 text-primary" />
+        <h4 className="text-xl font-semibold text-gray-900">Key Operational Needs</h4>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {active.needs.map((need, index) => (
+          <motion.div
+            key={need}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className={`bg-gradient-to-br ${index === 0 ? 'from-primary/5 to-primary/10' : index === 1 ? 'from-secondary/5 to-secondary/10' : 'from-accent/5 to-accent/10'} rounded-2xl p-6 text-center border border-gray-100`}
+          >
+            <div className={`w-12 h-12 rounded-xl ${index === 0 ? 'bg-primary/10' : index === 1 ? 'bg-secondary/10' : 'bg-accent/10'} flex items-center justify-center mx-auto mb-4`}>
+              {index === 0 && <Shield className="w-6 h-6 text-primary" />}
+              {index === 1 && <TrendingUp className="w-6 h-6 text-secondary" />}
+              {index === 2 && <Clock className="w-6 h-6 text-accent" />}
+            </div>
+            <h5 className="font-semibold text-gray-900">{need}</h5>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="mt-10 pt-10 border-t border-gray-200">
+        <h4 className="font-semibold text-gray-900 mb-4">Why TRU PAC Works for {active.name}</h4>
+        <ul className="space-y-3">
+          {[
+            "Customized to your volume requirements",
+            "Reliable supply chain management",
+            "Competitive bulk pricing",
+            "Fast turnaround times",
+            "Dedicated account support"
+          ].map((feature, index) => (
+            <li key={index} className="flex items-center gap-3 text-gray-700">
+              <div className="w-2 h-2 bg-primary rounded-full" />
+              {feature}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-12 pt-8 border-t border-gray-200">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-gray-600 text-sm">Ready to optimize your packaging?</p>
+            <p className="font-medium text-gray-900">Get a personalized solution</p>
+          </div>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => window.location.href = "/custom-packaging-quote"}
+            className="bg-gradient-to-r from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            Get Quote
+          </motion.button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const WhoWeSupply = () => {
   const [active, setActive] = useState(industries[0]);
+  const [popupOpen, setPopupOpen] = useState(false);
+
+  const handleTileClick = (industry) => {
+    setActive(industry);
+    setPopupOpen(true);
+  };
 
   return (
     <section className="relative py-32 overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 bg-gradient-to-b from-paper/30 to-white">
-        <div 
+        <div
           className="absolute inset-0 opacity-5"
           style={{
             backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
@@ -73,7 +159,6 @@ const WhoWeSupply = () => {
         />
       </div>
 
-      {/* Floating elements */}
       <div className="absolute top-20 left-10 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-10 w-80 h-80 bg-secondary/5 rounded-full blur-3xl" />
 
@@ -90,21 +175,21 @@ const WhoWeSupply = () => {
             <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
             <span className="text-sm font-semibold text-accent-dark">Industry Solutions</span>
           </div>
-          
+
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Packaging Solutions for
             <span className="block bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
               Every Food Business
             </span>
           </h2>
-          
+
           <p className="text-xl text-gray-600 leading-relaxed max-w-2xl mx-auto">
             Different operations have different demands. Our packaging is engineered to perform where it matters most for your specific business type.
           </p>
         </motion.div>
 
-        {/* Interactive Layout */}
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+        {/* ── DESKTOP: side-by-side layout (lg and up) ── */}
+        <div className="hidden lg:grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           {/* LEFT — Industry Selector */}
           <div className="space-y-4">
             {industries.map((industry, index) => (
@@ -129,16 +214,12 @@ const WhoWeSupply = () => {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-bold text-gray-900">
-                        {industry.name}
-                      </h3>
+                      <h3 className="text-xl font-bold text-gray-900">{industry.name}</h3>
                       {active.name === industry.name && (
                         <ArrowRight className="w-5 h-5 text-primary" />
                       )}
                     </div>
-                    <p className="text-gray-600 mt-2 text-sm">
-                      {industry.description}
-                    </p>
+                    <p className="text-gray-600 mt-2 text-sm">{industry.description}</p>
                     <div className="flex items-center gap-2 mt-3">
                       <Clock className="w-4 h-4 text-gray-400" />
                       <span className="text-xs text-gray-500">{industry.stats}</span>
@@ -149,7 +230,7 @@ const WhoWeSupply = () => {
             ))}
           </div>
 
-          {/* RIGHT — Detail Panel */}
+          {/* RIGHT — Detail Panel (desktop only) */}
           <motion.div
             key={active.name}
             initial={{ opacity: 0, scale: 0.95 }}
@@ -157,96 +238,85 @@ const WhoWeSupply = () => {
             transition={{ duration: 0.4 }}
             className="relative"
           >
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-gray-100 shadow-2xl p-8 lg:p-10 overflow-hidden">
-              {/* Gradient top bar */}
-              <div className={`absolute top-0 left-0 right-0 h-2 bg-gradient-to-r ${active.color}`} />
-              
-              <div className="flex items-center gap-4 mb-8">
-                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${active.color} flex items-center justify-center`}>
-                  <active.icon className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-2xl lg:text-3xl font-bold text-gray-900">
-                    {active.name}
-                  </h3>
-                  <p className="text-gray-600">{active.stats}</p>
-                </div>
-              </div>
-
-              <p className="text-gray-700 text-lg leading-relaxed mb-10">
-                {active.description}
-              </p>
-
-              <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <Target className="w-6 h-6 text-primary" />
-                  <h4 className="text-xl font-semibold text-gray-900">
-                    Key Operational Needs
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {active.needs.map((need, index) => (
-                    <motion.div
-                      key={need}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`bg-gradient-to-br ${index === 0 ? 'from-primary/5 to-primary/10' : index === 1 ? 'from-secondary/5 to-secondary/10' : 'from-accent/5 to-accent/10'} rounded-2xl p-6 text-center border border-gray-100`}
-                    >
-                      <div className={`w-12 h-12 rounded-xl ${index === 0 ? 'bg-primary/10' : index === 1 ? 'bg-secondary/10' : 'bg-accent/10'} flex items-center justify-center mx-auto mb-4`}>
-                        {index === 0 && <Shield className="w-6 h-6 text-primary" />}
-                        {index === 1 && <TrendingUp className="w-6 h-6 text-secondary" />}
-                        {index === 2 && <Clock className="w-6 h-6 text-accent" />}
-                      </div>
-                      <h5 className="font-semibold text-gray-900">{need}</h5>
-                    </motion.div>
-                  ))}
-                </div>
-
-                {/* Feature list */}
-                <div className="mt-10 pt-10 border-t border-gray-200">
-                  <h4 className="font-semibold text-gray-900 mb-4">Why TRU PAC Works for {active.name}</h4>
-                  <ul className="space-y-3">
-                    {[
-                      "Customized to your volume requirements",
-                      "Reliable supply chain management",
-                      "Competitive bulk pricing",
-                      "Fast turnaround times",
-                      "Dedicated account support"
-                    ].map((feature, index) => (
-                      <li key={index} className="flex items-center gap-3 text-gray-700">
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* CTA */}
-                <div className="mt-12 pt-8 border-t border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-gray-600 text-sm">Ready to optimize your packaging?</p>
-                      <p className="font-medium text-gray-900">Get a personalized solution</p>
-                    </div>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => window.location.href = "/custom-packaging-quote"}
-                      className="bg-gradient-to-r from-primary to-primary-dark text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      Get Quote
-                    </motion.button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Decorative element */}
+            <DetailPanel active={active} />
             <div className="absolute -z-10 -bottom-6 -right-6 w-40 h-40 bg-gradient-to-br from-primary/10 to-transparent rounded-full blur-xl" />
           </motion.div>
         </div>
+
+        {/* ── MOBILE: tile list only (below lg) ── */}
+        <div className="lg:hidden space-y-4">
+          {industries.map((industry, index) => (
+            <motion.button
+              key={industry.name}
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              onClick={() => handleTileClick(industry)}
+              className="w-full text-left rounded-2xl border-2 border-gray-200 bg-white p-6 shadow-sm active:scale-[0.98] transition-all duration-200"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${industry.color} flex items-center justify-center flex-shrink-0`}>
+                  <industry.icon className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-gray-900">{industry.name}</h3>
+                    <ArrowRight className="w-5 h-5 text-primary flex-shrink-0 ml-2" />
+                  </div>
+                  <p className="text-gray-600 mt-1 text-sm line-clamp-2">{industry.description}</p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Clock className="w-4 h-4 text-gray-400" />
+                    <span className="text-xs text-gray-500">{industry.stats}</span>
+                  </div>
+                </div>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+
+        {/* ── MOBILE POPUP ── */}
+        <AnimatePresence>
+          {popupOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                key="backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+                onClick={() => setPopupOpen(false)}
+              />
+
+              {/* Sheet — slides up from bottom */}
+              <motion.div
+                key="popup"
+                initial={{ y: "100%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "100%" }}
+                transition={{ type: "spring", damping: 30, stiffness: 300 }}
+                className="fixed bottom-0 left-0 right-0 z-50 lg:hidden max-h-[90vh] overflow-y-auto rounded-t-3xl"
+              >
+                {/* Close button */}
+                <div className="sticky top-0 z-10 flex justify-end px-6 pt-5 pb-2 bg-white rounded-t-3xl">
+                  <button
+                    onClick={() => setPopupOpen(false)}
+                    className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                    aria-label="Close"
+                  >
+                    <X className="w-5 h-5 text-gray-600" />
+                  </button>
+                </div>
+
+                <div className="px-4 pb-10">
+                  <DetailPanel active={active} />
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Bottom Stats */}
         <motion.div
